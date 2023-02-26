@@ -6,7 +6,7 @@
 /*   By: ysakahar <ysakahar@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/20 13:19:06 by ysakahar          #+#    #+#             */
-/*   Updated: 2023/02/22 00:11:39 by ysakahar         ###   ########.fr       */
+/*   Updated: 2023/02/26 07:29:16 by ysakahar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 
 /* clean_exit:
 MLXループを終了してディスプレイを破棄する前に、
-ウィンドウ、MLXイメージ、MLXインスタンスを破棄し、
-カラーパレットを解放します。
+ウィンドウ、MLXイメージ、MLXインスタンスを破棄し、カラーパレットを解放します。
 指定された終了コードでプロセスを終了します。*/
 void	clean_exit(int exit_code, t_fractol *f)
 {
@@ -36,23 +35,12 @@ void	clean_exit(int exit_code, t_fractol *f)
 	exit(exit_code);
 }
 
-/* msg:
-エラーメッセージを標準エラーに表示します。
-指定されたerrnoを返します。*/
-int	msg(char *str1, char *str2, int errno)
-{
-	ft_putstr_fd("Fractol: ", 2);
-	ft_putstr_fd(str1, 2);
-	ft_putendl_fd(str2, 2);
-	return (errno);
-}
-
 /* end_fractol:
 プログラムを正常に終了します。
-この関数は MLX フックに登録されています。
+この関数は MLXフックに登録されています。
 ユーザーが右ボタンを押すたびに、この関数が自動的に呼び出されます。*/
-int	end_fractol(t_fractol *mlx)
+int	end_fractol(t_fractol *f)
 {
-	clean_exit(0, mlx);
+	clean_exit(0, f);
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: ysakahar <ysakahar@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/20 13:19:28 by ysakahar          #+#    #+#             */
-/*   Updated: 2023/02/21 18:22:54 by ysakahar         ###   ########.fr       */
+/*   Updated: 2023/02/26 10:40:07 by ysakahar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,32 +16,28 @@
 複素数がBurning Shipセットの一部であるかどうかを確認します。
 以前にピクセルの座標から変換された、ポイントの実座標と虚座標をパラメーターとして受け取ります。
 数値がBurning Shipセットから抜けるまでの反復回数を返します。
-これはカラーリングの決定に使用できます。*/
+Burning Ship フラクタルは、Mandelbrot フラクタルの歪みです。
+同じ方程式を使用してセットを計算しますが、各反復でzrとziの絶対値を使用します。*/
 int	burning_ship(double cr, double ci)
 {
-	int		n;
-	double	zr;
-	double	zi;
+	int		i;
+	double	re;
+	double	im;
 	double	tmp;
 
-	zr = 0;
-	zi = 0;
-	n = 0;
-	while (n < MAX_ITERATIONS)
+	re = 0;
+	im = 0;
+	i = 0;
+	while (i < MAX_ITERATIONS)
 	{
-		if ((zr * zr + zi * zi) > 4.0)
+		if ((re * re + im * im) > 4.0)
 			break ;
-		zr = fabs(zr);
-		zi = fabs(zi);
-		tmp = 2 * zr * zi + ci;
-		zr = zr * zr - zi * zi + cr;
-		zi = tmp;
-		n++;
+		re = fabs(re);
+		im = fabs(im);
+		tmp = 2 * re * im + ci;
+		re = re * re - im * im + cr;
+		im = tmp;
+		i++;
 	}
-	return (n);
+	return (i);
 }
-/*
-	How it works:
-Burning Ship フラクタルは、Mandelbrot フラクタルの歪みです。
-同じ方程式を使用してセットを計算しますが、各反復でzrとziの絶対値を使用します。
-*/

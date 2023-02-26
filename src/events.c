@@ -6,125 +6,127 @@
 /*   By: ysakahar <ysakahar@student.42tokyo.jp>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/20 13:18:33 by ysakahar          #+#    #+#             */
-/*   Updated: 2023/02/22 12:34:33 by ysakahar         ###   ########.fr       */
+/*   Updated: 2023/02/26 15:13:12 by ysakahar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/fractol.h"
 
 /* zoom:
-複素数のエッジ値をズーム乗数(zoom)で調整することにより、
+複素数のエッジ値をズーム乗数(zoom_level)で調整することにより、
 フラクタルのビューをズームインまたはズームアウトします。
 その後、フラクタルを別の解像度で再度生成して、
 ズームインまたはズームアウトしたように見せることができます。
-ズーム乗数(zoom)が0.5のように小さい場合、ビューはズームインし、
+ズーム乗数(zoom_level)が0.5のように小さい場合、ビューはズームインし、
 2.0のように大きい場合はズームアウトします。*/
-static void	zoom(t_fractol *f, double zoom)
+static void	zoom(t_fractol *f, double zoom_level)
 {
-	double	center_r;
-	double	center_i;
+	double	width;
+	double	height;
 
-	center_r = f->re_min - f->re_max;
-	center_i = f->im_max - f->im_min;
-	f->re_max = f->re_max + (center_r - zoom * center_r) / 2;
-	f->re_min = f->re_max + zoom * center_r;
-	f->im_min = f->im_min + (center_i - zoom * center_i) / 2;
-	f->im_max = f->im_min + zoom * center_i;
+	width = f->re_min - f->re_max;
+	height = f->im_max - f->im_min;
+	f->re_max = f->re_max + (width - zoom_level * width) / 2;
+	f->re_min = f->re_max + zoom_level * width;
+	f->im_min = f->im_min + (height - zoom_level * height) / 2;
+	f->im_max = f->im_min + zoom_level * height;
 }
 
 /* move:
 複素数のエッジ値を特定の方向に特定の距離だけ調整することで、
 フラクタルのビューを移動します。*/
-static void	move(t_fractol *f, double distance, char direction)
+static void	move(t_fractol *f, double move_pixels, char direction)
 {
-	double	center_r;
-	double	center_i;
+	double	width;
+	double	height;
 
-	center_r = f->re_max - f->re_min;
-	center_i = f->im_max - f->im_min;
+	width = f->re_max - f->re_min;
+	height = f->im_max - f->im_min;
 	if (direction == 'R')
 	{
-		f->re_min += center_r * distance;
-		f->re_max += center_r * distance;
+		f->re_min += width * move_pixels;
+		f->re_max += width * move_pixels;
 	}
 	else if (direction == 'L')
 	{
-		f->re_min -= center_r * distance;
-		f->re_max -= center_r * distance;
+		f->re_min -= width * move_pixels;
+		f->re_max -= width * move_pixels;
 	}
 	else if (direction == 'D')
 	{
-		f->im_min -= center_i * distance;
-		f->im_max -= center_i * distance;
+		f->im_min -= height * move_pixels;
+		f->im_max -= height * move_pixels;
 	}
 	else if (direction == 'U')
 	{
-		f->im_min += center_i * distance;
-		f->im_max += center_i * distance;
+		f->im_min += height * move_pixels;
+		f->im_max += height * move_pixels;
 	}
 }
 
-/* key_event_extend:
-キーボード キーからのイベントを処理します。
+/* key_event_helper:
+キーボードキーからのイベントを処理します。
 - 1、2、3、4、5: フラクタルの切り替え
 この関数は MLX フックに登録されており、
 ユーザーが内部で何かを行うと、自動的に呼び出されます
-キーボードを使用したプログラム ウィンドウ。
+キーボードを使用したプログラムウィンドウ。
 有効なイベントが検出されると設定が調整され、フラクタル再描画されます。*/
-static int	key_event_extend(int keycode, t_fractol *mlx)
+static int	key_event_helper(int keycode, t_fractol *f)
 {
-	if (keycode == KEY_ONE && mlx->set_type != MANDELBROT)
-		mlx->set_type = MANDELBROT;
-	else if (keycode == KEY_TWO && mlx->set_type != JULIA)
-		mlx->set_type = JULIA;
-	else if (keycode == KEY_THREE && mlx->set_type != BURNING_SHIP)
-		mlx->set_type = BURNING_SHIP;
-	else if (keycode == KEY_FOUR && mlx->set_type != TRICORN)
-		mlx->set_type = TRICORN;
-	else if (keycode == KEY_FIVE && mlx->set_type != MANDELBOX)
-		mlx->set_type = MANDELBOX;
+	if (keycode == KEY_ONE && f->fractal_type != MANDELBROT)
+		f->fractal_type = MANDELBROT;
+	else if (keycode == KEY_TWO && f->fractal_type != JULIA)
+		f->fractal_type = JULIA;
+	else if (keycode == KEY_THREE && f->fractal_type != BURNING_SHIP)
+		f->fractal_type = BURNING_SHIP;
+	else if (keycode == KEY_FOUR && f->fractal_type != TRICORN)
+		f->fractal_type = TRICORN;
+	else if (keycode == KEY_FIVE && f->fractal_type != MANDELBOX)
+		f->fractal_type = MANDELBOX;
+	else if (keycode == KEY_SIX && f->fractal_type != MULTIBROT)
+		f->fractal_type = MULTIBROT;
 	else
 		return (1);
-	get_complex_layout(mlx);
-	render(mlx);
+	set_fractal_viewport(f);
+	render_fractal(f);
 	return (0);
 }
 
 /* key_event:
-キーボード キーからのイベントを処理します。
-	+ or - : zoom
+キーボードキーからのイベントを処理します。
+	E or R : zoom
 	- 矢印キー or WASD: 移動
 	- スペース: カラーシフト
-この関数は MLX フックに登録されており、
+この関数は MLXフックに登録されており、
 ユーザーが内部で何かを行うと、自動的に呼び出されます
-キーボードを使用したプログラム ウィンドウ。
+キーボードを使用したプログラムウィンドウ。
 有効なイベントが検出されると設定が調整され、フラクタルが再描画されます。*/
-int	key_event(int keycode, t_fractol *mlx)
+int	key_event(int keycode, t_fractol *f)
 {
 	if (keycode == KEY_ESC)
 	{
-		end_fractol(mlx);
+		end_fractol(f);
 		return (0);
 	}
-	else if (keycode == KEY_PLUS_E)
-		zoom(mlx, 0.5);
-	else if (keycode == KEY_MINUS_R)
-		zoom(mlx, 2);
+	else if (keycode == KEY_E)
+		zoom(f, 0.5);
+	else if (keycode == KEY_R)
+		zoom(f, 2);
 	else if (keycode == KEY_UP || keycode == KEY_W)
-		move(mlx, 0.2, 'U');
+		move(f, 0.2, 'U');
 	else if (keycode == KEY_DOWN || keycode == KEY_S)
-		move(mlx, 0.2, 'D');
+		move(f, 0.2, 'D');
 	else if (keycode == KEY_LEFT || keycode == KEY_A)
-		move(mlx, 0.2, 'L');
+		move(f, 0.2, 'L');
 	else if (keycode == KEY_RIGHT || keycode == KEY_D)
-		move(mlx, 0.2, 'R');
+		move(f, 0.2, 'R');
 	else if (keycode == KEY_SPACE)
-		color_shift(mlx);
-	else if (!key_event_extend(keycode, mlx))
+		change_color(f);
+	else if (!key_event_helper(keycode, f))
 		return (1);
 	else
 		return (1);
-	render(mlx);
+	render_fractal(f);
 	return (0);
 }
 
@@ -132,34 +134,34 @@ int	key_event(int keycode, t_fractol *mlx)
 マウスからのイベントを処理します。
 	マウスホイール: zoom
 	左クリック: Julia_shift
-この関数は MLX フックに登録されており、
+この関数はMLXフックに登録されており、
 ユーザーがマウスを使用してプログラムウィンドウ内で何かを実行すると、自動的に呼び出されます。
 有効なイベントが検出されると、設定が調整され、フラクタルが再描画されます。*/
-int	mouse_event(int keycode, int x, int y, t_fractol *mlx)
+int	mouse_event(int keycode, int mouse_x, int mouse_y, t_fractol *f)
 {
 	if (keycode == MOUSE_WHEEL_UP)
 	{
-		zoom(mlx, 0.5);
-		x -= WIDTH / 2;
-		y -= HEIGHT / 2;
-		if (x < 0)
-			move(mlx, (double)x * -1 / WIDTH, 'L');
-		else if (x > 0)
-			move(mlx, (double)x / WIDTH, 'R');
-		if (y < 0)
-			move(mlx, (double)y * -1 / HEIGHT, 'U');
-		else if (y > 0)
-			move (mlx, (double)y / HEIGHT, 'D');
+		zoom(f, 0.5);
+		mouse_x -= WIDTH / 2;
+		mouse_y -= HEIGHT / 2;
+		if (mouse_x < 0)
+			move(f, (double)mouse_x * -1 / WIDTH, 'L');
+		else if (mouse_x > 0)
+			move(f, (double)mouse_x / WIDTH, 'R');
+		if (mouse_y < 0)
+			move(f, (double)mouse_y * -1 / HEIGHT, 'U');
+		else if (mouse_y > 0)
+			move (f, (double)mouse_y / HEIGHT, 'D');
 	}
 	else if (keycode == MOUSE_WHEEL_DOWN)
-		zoom(mlx, 2);
+		zoom(f, 2);
 	else if (keycode == MOUSE_BTN)
 	{
-		if (mlx->set_type == JULIA)
-			julia_shift(x, y, mlx);
+		if (f->fractal_type == JULIA)
+			julia_shift(mouse_x, mouse_y, f);
 	}
 	else
 		return (0);
-	render(mlx);
+	render_fractal(f);
 	return (0);
 }
